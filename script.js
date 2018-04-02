@@ -1,25 +1,30 @@
 let gridSize = 20;
-let values = [];
 
-let expressionInput;
+
+let expressionInput = [];
 let smoothnessInput;
 
 function setup() {
     createCanvas(600, 600);
     background(255);
     drawGrid();
-    translate(0, height/2);
-    expressionInput = select('#function');
+    for (var i = 1; i < 10; i++){
+        let selectText = "#function" + i.toString();
+        expressionInput[i-1] = select(selectText);
+        expressionInput[i-1].changed(updateFunction);
+    }
     smoothnessInput = select('#smoothness');
-    expressionInput.changed(updateFunction);
     smoothnessInput.changed(updateSmoothness);
     
 }
 
 function draw() {
-    let simpEx = math.simplify(expressionInput.value());
-    values = evaluateFunction(simpEx, values);
-    drawFunction(values);
+    for (var i = 0; i < expressionInput.length; i++){
+        let values = [];
+        let simpEx = math.simplify(expressionInput[i].value());
+        values = evaluateFunction(simpEx, values);
+        drawFunction(values);
+    }
 }
 
 function drawGrid() {
@@ -56,12 +61,13 @@ function evaluateFunction(expression) {
     let arr = [];
      
     for(let i = 0; i < (width * smoothnessInput.value() / gridSize) + 1; i++) {
-        arr[i] = expression.eval({x: i - (width * smoothnessInput.value() / gridSize / 2)}) / expression.eval({x:smoothnessInput.value()});
+        arr[i] = expression.eval({x: (i - (width * smoothnessInput.value() / gridSize / 2))/smoothnessInput.value()});
     }
     return arr;
 }
 
 function drawFunction(arr) {
+    translate(0, 0);
     strokeWeight(4);
     stroke(255, 0, 0);
     translate(0, height/2)
