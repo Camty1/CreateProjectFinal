@@ -1,9 +1,8 @@
-let gridSize = 20;
+let gridSize = 60;
 
 
 let expressionInput = [];
-let smoothnessInput;
-
+let smoothness = 20;
 function setup() {
     createCanvas(600, 600);
     background(255);
@@ -13,18 +12,19 @@ function setup() {
         expressionInput[i-1] = select(selectText);
         expressionInput[i-1].changed(updateFunction);
     }
-    smoothnessInput = select('#smoothness');
-    smoothnessInput.changed(updateSmoothness);
     
 }
 
 function draw() {
+    
+    translate(0, height/2);
     for (var i = 0; i < expressionInput.length; i++){
         let values = [];
         let simpEx = math.simplify(expressionInput[i].value());
-        values = evaluateFunction(simpEx, values);
+        values = evaluateFunction(simpEx);
         drawFunction(values);
     }
+    translate(0, -height/2)
 }
 
 function drawGrid() {
@@ -42,6 +42,7 @@ function drawGrid() {
     strokeWeight(3);
     line(width/2, 0, width/2, height);
     line(0, height/2, width, height/2);
+    translate(0, height/2);
 }
 
 function updateFunction() {
@@ -49,29 +50,53 @@ function updateFunction() {
     console.log(val.toString());
 }
 
-function updateSmoothness() {
-    let val = smoothnessInput.value();
-    
-    console.log(val.toString());
-    background(255);
-    drawGrid();
-}
-
 function evaluateFunction(expression) {
     let arr = [];
      
-    for(let i = 0; i < (width * smoothnessInput.value() / gridSize) + 1; i++) {
-        arr[i] = expression.eval({x: (i - (width * smoothnessInput.value() / gridSize / 2))/smoothnessInput.value()});
+    for(let i = 0; i < (width * smoothness / gridSize) + 1; i++) {
+        arr[i] = expression.eval({x: (i - (width * smoothness / gridSize / 2))/smoothness});
     }
     return arr;
+}
+
+function evaluateExpression(expression, xValue) {
+    
+    let tokens = [];
+    
+    let values = [];
+    
+    let operators = [];
+    
+    for (var i = 0; i < expression.length; i++){
+        tokens[i] = expression.charAt(i);
+    }
+    
+    for (var j = 0; j < tokens.length; j++){
+        if (tokens[j] == ' '){
+            continue;
+        }
+        
+        if (j < tokens.length && ((tokens[j] >= '0' && tokens[j] <= '9') || tokens[j] == '.')){
+            let buffer : String;
+            
+            while (j < tokens.length && ((tokens[j] >= '0' && tokens[j] <= '9') || tokens[j] == '.')) {
+                buffer = buffer + tokens[j];
+                j++;
+            }
+            values.push(parseFloat(buffer));
+        }
+        
+        
+        
+    }
+    
 }
 
 function drawFunction(arr) {
     translate(0, 0);
     strokeWeight(4);
     stroke(255, 0, 0);
-    translate(0, height/2)
     for (let x = 0; x < arr.length-1; x++) {
-        line(x * gridSize / (smoothnessInput.value()), -gridSize *  arr[x] , (x+1) * gridSize / (smoothnessInput.value()), -gridSize * arr[x+1] );
+        line(x * gridSize / (smoothness), -gridSize *  arr[x] , (x+1) * gridSize / (smoothness), -gridSize * arr[x+1] );
     }
 }
