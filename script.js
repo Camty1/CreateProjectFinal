@@ -86,8 +86,24 @@ function evaluateExpression(expression, xValue) {
             values.push(parseFloat(buffer));
         }
         
+        if (tokens[j] == 'x' || tokens[j] == 'X') {
+            values.push(xValue);
+        }
         
+        if (tokens[j] == '(') {
+            operators.push(tokens[j]);
+        }
         
+        if (tokens[j] == ')'){
+            while (operators[operators.length - 1] != '('){
+                values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+            }
+            operators.pop();
+        }
+        
+        if (tokens[j] == '+' || tokens[j] == '-' || tokens[j] == '*' || tokens[j] == '/') {
+            
+        }
     }
     
 }
