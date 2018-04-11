@@ -1,8 +1,8 @@
-let gridSize = 60;
+let gridSize = 30;
 
 
 let expressionInput = [];
-let smoothness = 20;
+let smoothness = 100;
 function setup() {
     createCanvas(600, 600);
     background(255);
@@ -10,21 +10,20 @@ function setup() {
     for (var i = 1; i < 10; i++){
         let selectText = "#function" + i.toString();
         expressionInput[i-1] = select(selectText);
-        expressionInput[i-1].changed(updateFunction);
     }
     
 }
 
 function draw() {
-    
-    translate(0, height/2);
+    background(255);
+    drawGrid();
     for (var i = 0; i < expressionInput.length; i++){
         let values = [];
-        let simpEx = math.simplify(expressionInput[i].value());
+        let simpEx = expressionInput[i].value();
         values = evaluateFunction(simpEx);
         drawFunction(values);
     }
-    translate(0, -height/2)
+    
 }
 
 function drawGrid() {
@@ -45,16 +44,17 @@ function drawGrid() {
     translate(0, height/2);
 }
 
-function updateFunction() {
-    let val = expressionInput.value();
-    console.log(val.toString());
-}
-
 function evaluateFunction(expression) {
     let arr = [];
      
     for(let i = 0; i < (width * smoothness / gridSize) + 1; i++) {
-        arr[i] = expression.eval({x: (i - (width * smoothness / gridSize / 2))/smoothness});
+        let xValue = (i - (width * smoothness / gridSize / 2))/smoothness;
+        try{
+            arr[i] = evaluateExpression(expression, xValue);
+        }
+        catch (err) {
+            arr[i] = null;
+        }
     }
     return arr;
 }
@@ -77,7 +77,7 @@ function evaluateExpression(expression, xValue) {
         }
         
         if (j < tokens.length && ((tokens[j] >= '0' && tokens[j] <= '9') || tokens[j] == '.')){
-            let buffer : String;
+            let buffer = "";
             
             while (j < tokens.length && ((tokens[j] >= '0' && tokens[j] <= '9') || tokens[j] == '.')) {
                 buffer = buffer + tokens[j];
@@ -96,16 +96,49 @@ function evaluateExpression(expression, xValue) {
         
         if (tokens[j] == ')'){
             while (operators[operators.length - 1] != '('){
-                values.push(applyOperator(operators.pop(), values.pop(), values.pop()));
+                values.push(applyOp(operators.pop(), values.pop(), values.pop()));
             }
             operators.pop();
         }
         
         if (tokens[j] == '+' || tokens[j] == '-' || tokens[j] == '*' || tokens[j] == '/') {
+            while(operators.length != 0 && hasPrecedence(tokens[j], operators[operators.length - 1]))
+                values.push(applyOp(operators.pop(), values.pop(), values.pop()));
             
+            operators.push(tokens[j]);
         }
+        
     }
     
+    while (operators.length != 0)
+        values.push(applyOp(operators.pop(), values.pop(), values.pop()));
+    
+    return values.pop();      
+}
+
+function hasPrecedence (op1, op2) {
+    if (op2 == '(' || op2 == ')')
+        return false;
+    else if ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-'))
+        return false;
+    else
+        return true;
+}
+
+function applyOp (op, b, a) {
+    switch(op){
+        case '+':
+            return a + b;
+        case '-':
+            return a - b;
+        case '*':
+            return a * b;
+        case '/':
+            if (b == 0)
+                throw "Cannot divide by 0";
+            return a / b;
+    }
+    return 0;
 }
 
 function drawFunction(arr) {
@@ -113,6 +146,8 @@ function drawFunction(arr) {
     strokeWeight(4);
     stroke(255, 0, 0);
     for (let x = 0; x < arr.length-1; x++) {
-        line(x * gridSize / (smoothness), -gridSize *  arr[x] , (x+1) * gridSize / (smoothness), -gridSize * arr[x+1] );
+        if (arr[x] != null && arr[x + 1] != null){
+            line(x * gridSize / (smoothness), -gridSize *  arr[x] , (x+1) * gridSize / (smoothness), -gridSize * arr[x+1] );
+        }
     }
 }
