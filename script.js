@@ -1,8 +1,13 @@
+// Grid Setup
+let gridSizes = [5 ,10, 20, 30, 50, 60, 150, 300];
 let gridSize = 30;
+let gridIndex = 3;
 
 
+// Other Setup
 let expressionInput = [];
 let smoothness = 100;
+
 function setup() {
     createCanvas(600, 600);
     background(255);
@@ -14,7 +19,37 @@ function setup() {
     
 }
 
+// Key Presses and Zoom
+function keyPressed() {
+    
+    // Zoom in
+    if (keyCode == 187 || keyCode == 107) {
+        
+        // Prevent Overflow
+        if (gridIndex < gridSizes.length - 1) {
+            
+            // Go to next index in gridSizes
+            gridIndex++;
+        }
+        
+    }
+    
+    // Zoom out
+    if (keyCode == 189 || keyCode == 109) {
+        
+        // Prevent Overflow
+        if (gridIndex > 0) {
+            
+            // Go to previous index in gridSizes
+            gridIndex--;
+        }
+        
+    }
+    
+}
+
 function draw() {
+    gridSize = gridSizes[gridIndex];
     background(255);
     drawGrid();
     for (var i = 0; i < expressionInput.length; i++){
@@ -90,6 +125,10 @@ function evaluateExpression(expression, xValue) {
             values.push(xValue);
         }
         
+        if (tokens[j] == 'e') {
+            values.push(math.e);
+        }
+        
         if (tokens[j] == '(') {
             operators.push(tokens[j]);
         }
@@ -101,7 +140,7 @@ function evaluateExpression(expression, xValue) {
             operators.pop();
         }
         
-        if (tokens[j] == '+' || tokens[j] == '-' || tokens[j] == '*' || tokens[j] == '/') {
+        if (tokens[j] == '+' || tokens[j] == '-' || tokens[j] == '*' || tokens[j] == '/' || tokens[j] == '^') {
             while(operators.length != 0 && hasPrecedence(tokens[j], operators[operators.length - 1]))
                 values.push(applyOp(operators.pop(), values.pop(), values.pop()));
             
@@ -118,6 +157,8 @@ function evaluateExpression(expression, xValue) {
 
 function hasPrecedence (op1, op2) {
     if (op2 == '(' || op2 == ')')
+        return false;
+    else if ((op1 == '^') && (op2 == '*' || op2 == '/' || op2 == '+' || op2 == '-'))
         return false;
     else if ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-'))
         return false;
@@ -137,6 +178,8 @@ function applyOp (op, b, a) {
             if (b == 0)
                 throw "Cannot divide by 0";
             return a / b;
+        case '^':
+            return Math.pow(a, b);
     }
     return 0;
 }
