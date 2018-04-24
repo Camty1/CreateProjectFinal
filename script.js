@@ -23,7 +23,7 @@ function setup() {
 function keyPressed() {
     
     // Zoom in
-    if (keyCode == 187 || keyCode == 107) {
+    if (keyCode == 107) {
         
         // Prevent Overflow
         if (gridIndex < gridSizes.length - 1) {
@@ -35,7 +35,7 @@ function keyPressed() {
     }
     
     // Zoom out
-    if (keyCode == 189 || keyCode == 109) {
+    if (keyCode == 109) {
         
         // Prevent Overflow
         if (gridIndex > 0) {
@@ -126,7 +126,7 @@ function evaluateExpression(expression, xValue) {
         }
         
         if (tokens[j] == 'e') {
-            values.push(math.e);
+            values.push(Math.E);
         }
         
         if (tokens[j] == '(') {
